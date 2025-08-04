@@ -57,11 +57,36 @@ if length(fieldnames(LASER_CALIBRATIONS)) ~= length(STIMULATION_POSITIONS)
 end
 
 %% Implement Experiment
-
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MAX_ITI_S MIN_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
 
+for current_trial = 1:TOTAL_NUM_TRIALS
+    % For each trial
 
+    % Params for this trial
+    params = trial_params(current_trial, :);
+    trial_position = params.position;
+    trial_power = params.power;
+    trial_ITI = params.ITI;
+    
+    % Move Galvostation
+
+    % Set Laser Power
+
+    % Assemble State Machine
+
+    % Send state machine
+    
+    % Wait for data to come back
+    raw_events = RunStateMachine();
+
+    % Save data
+    BpodSystem.Data = AddTrialEvents(BpodSystem.Data, raw_events);
+    BpodSystem.Data.TrialSettings(current_trial) = params;
+    SaveBpodSessionData();
+
+
+end
 
 end
 
