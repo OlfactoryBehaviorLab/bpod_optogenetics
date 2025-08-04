@@ -90,5 +90,9 @@ for current_trial = 1:TOTAL_NUM_TRIALS
 
 end
 
+galvostation = [];
+EndPulsePal;
+EndBpod;
+
 end
 
