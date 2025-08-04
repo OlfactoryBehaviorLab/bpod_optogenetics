@@ -1,6 +1,7 @@
 function freely_moving
 GALVOSTATION_CAL_COEFFICIENT = 0.0;
 GALVOSTATION_CAL_CONSTANT = 0.0;
+GALVOSTATION_OFFSET_V = 0.075;
 
 STIMULATION_POSITIONS = [250, 750, 1250]; % Center(s) in um of stimulation positions; stimulation is +/- 250um of center
 
