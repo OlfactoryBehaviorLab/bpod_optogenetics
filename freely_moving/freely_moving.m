@@ -1,4 +1,5 @@
 function freely_moving
+%% EXPERIMENT PARAMETERS
 GALVOSTATION_CAL_COEFFICIENT = 0.0;
 GALVOSTATION_CAL_CONSTANT = 0.0;
 GALVOSTATION_OFFSET_V = 0.075;
@@ -25,9 +26,22 @@ MIN_ITI_S = 20; % Minimum ITI time in seconds
 MAX_ITI_S = 40; % Maximum ITI time in seconds
 
 TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
-
-
+%% Objects
 global BpodSystem;
+
+% Start BPOD if it isn't started
+if ~exist('BpodSystem', 'var')
+    Bpod();
+end
+
+% Start PulsePal if it isn't started
+if ~exist('PulsePalSystem', 'var')
+    PulsePal();
+end
+
+BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
+% galvostation = bpod_galvostation.galvostation(BpodSystem)
+% galvo_gui = bpod_galvostation.gui.main_gui(galvostation)
 
 %% CHECK INPUTS
 if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
@@ -42,15 +56,7 @@ if length(fieldnames(LASER_CALIBRATIONS)) ~= length(STIMULATION_POSITIONS)
     error("Please provide a laser calibration for each stimulation position!");
 end
 
-% Start BPOD if it isn't started
-if ~exist('BpodSystem', 'var')
-    Bpod();
-end
-
-% Start PulsePal if it isn't started
-if ~exist('PulsePalSystem', 'var')
-    PulsePal();
-end
+%% Implement Experiment
 
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MAX_ITI_S MIN_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
