@@ -40,8 +40,8 @@ if ~exist('PulsePalSystem', 'var')
 end
 
 BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
-% galvostation = bpod_galvostation.galvostation(BpodSystem)
-% galvo_gui = bpod_galvostation.gui.main_gui(galvostation)
+galvostation = bpod_galvostation.galvostation(BpodSystem);
+galvo_gui = bpod_galvostation.gui.main_gui(galvostation);
 
 %% CHECK INPUTS
 if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
@@ -62,6 +62,8 @@ trial_params.ITI = randi([MAX_ITI_S MIN_ITI_S], size(trial_params, 1), 1); % Gen
 
 for current_trial = 1:TOTAL_NUM_TRIALS
     % For each trial
+
+    % TODO: Lock galvostation GUI but still update the display
 
     % Params for this trial
     params = trial_params(current_trial, :);
