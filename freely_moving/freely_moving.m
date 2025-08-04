@@ -12,7 +12,9 @@ LASER_CALIBRATIONS.POS_3 = [];
 NUM_TRIALS_PER_POSITION = 20;
 
 DESIRED_POWERS_MW = [0.5, 1, 2]; % Stimulation power(s) in mW
-DESIRED_DUTY_CYCLE = [100, 100, 100]; % Duty cycle for each power; must be same length as DESIRED_POWERS_MW
+PULSE_DURATIONS_S = [-1, -1, -1]; % Pulse durations for duty-cycle; -1 indicates constant power
+INTER_PULSE_INTERVALS_S = [0, 0, 0]; % Inter-pulse-intervals for duty-cycle in seconds; 0 indicates constant power
+
 
 PRE_STIM_TIME_S = 4; % Pre stimulation time in seconds
 STIMULATION_TIME_S = 2; % Stimulation time in seconds
@@ -27,7 +29,7 @@ TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * len
 global BpodSystem;
 
 %% CHECK INPUTS
-if length(DESIRED_POWERS_MW) ~= length(DESIRED_DUTY_CYCLE)
+if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
     error("The length of DESIRED_POWERS_MW and DESIRED_DUTY_CYCLE must be the same! There must be one duty cycle per power level!");
 end
 
