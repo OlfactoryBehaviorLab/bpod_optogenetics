@@ -40,7 +40,9 @@ if ~exist('PulsePalSystem', 'var')
 end
 
 BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
-galvostation = bpod_galvostation.galvostation(BpodSystem);
+
+% Create galvostation object
+galvostation = bpod_galvostation.galvostation(BpodSystem, 'offset_voltage', GALVOSTATION_OFFSET_V, 'calibration', [GALVOSTATION_CAL_COEFFICIENT, GALVOSTATION_CAL_CONSTANT]);
 galvo_gui = bpod_galvostation.gui.main_gui(galvostation);
 
 %% CHECK INPUTS
