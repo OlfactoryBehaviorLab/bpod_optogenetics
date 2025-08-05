@@ -72,6 +72,7 @@ for current_trial = 1:TOTAL_NUM_TRIALS
     trial_ITI = params.ITI;
     
     % Move Galvostation
+    galvostation.move(trial_position);
 
     % Set Laser Power
 
