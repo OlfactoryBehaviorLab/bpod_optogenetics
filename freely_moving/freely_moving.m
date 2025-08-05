@@ -1,15 +1,15 @@
 function freely_moving
 %% EXPERIMENT PARAMETERS
-GALVOSTATION_CAL_COEFFICIENT = 0.0;
-GALVOSTATION_CAL_CONSTANT = 0.0;
+GALVOSTATION_CAL_COEFFICIENT = 1;
+GALVOSTATION_CAL_CONSTANT = 2;
 GALVOSTATION_OFFSET_V = 0.075;
 
 STIMULATION_POSITIONS = [250, 750, 1250]; % Center(s) in um of stimulation positions; stimulation is +/- 250um of center
 
 LASER_CALIBRATIONS = []; % Each galvostation position attenuates the laser slightly differently; so each position will need a slightly
-LASER_CALIBRATIONS(1, :) = []; % different set of calibration values to ensure the power is delivered consistently
-LASER_CALIBRATIONS(2, :) = []; % Each calibration should be two values in the form [coefficient, constant] based on a linear fit
-LASER_CALIBRATIONS(3, :) = [];
+LASER_CALIBRATIONS(1, :) = [1, 2]; % different set of calibration values to ensure the power is delivered consistently
+LASER_CALIBRATIONS(2, :) = [2, 3]; % Each calibration should be two values in the form [coefficient, constant] based on a linear fit
+LASER_CALIBRATIONS(3, :) = [3, 4];
 
 NUM_TRIALS_PER_POSITION = 20;
 
