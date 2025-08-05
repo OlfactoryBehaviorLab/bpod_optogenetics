@@ -6,10 +6,10 @@ GALVOSTATION_OFFSET_V = 0.075;
 
 STIMULATION_POSITIONS = [250, 750, 1250]; % Center(s) in um of stimulation positions; stimulation is +/- 250um of center
 
-LASER_CALIBRATIONS = struct(); % Each galvostation position attenuates the laser slightly differently; so each position will need a slightly
-LASER_CALIBRATIONS.POS_1 = []; % different set of calibration values to ensure the power is delivered consistently
-LASER_CALIBRATIONS.POS_2 = []; % Each calibration should be two values in the form [coefficient, constant] based on a linear fit
-LASER_CALIBRATIONS.POS_3 = [];
+LASER_CALIBRATIONS = []; % Each galvostation position attenuates the laser slightly differently; so each position will need a slightly
+LASER_CALIBRATIONS(1, :) = []; % different set of calibration values to ensure the power is delivered consistently
+LASER_CALIBRATIONS(2, :) = []; % Each calibration should be two values in the form [coefficient, constant] based on a linear fit
+LASER_CALIBRATIONS(3, :) = [];
 
 NUM_TRIALS_PER_POSITION = 20;
 
@@ -52,7 +52,7 @@ if GALVOSTATION_CAL_CONSTANT == 0 | GALVOSTATION_CAL_CONSTANT == 0
     error("Please provide calibration values for the Galvostation!");
 end
 
-if length(fieldnames(LASER_CALIBRATIONS)) ~= length(STIMULATION_POSITIONS)
+if size(LASER_CALIBRATIONS, 1) ~= length(STIMULATION_POSITIONS)
     error("Please provide a laser calibration for each stimulation position!");
 end
 
