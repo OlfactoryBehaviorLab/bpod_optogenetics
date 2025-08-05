@@ -27,17 +27,28 @@ MAX_ITI_S = 40; % Maximum ITI time in seconds
 
 TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
 %% Objects
+% Start BPOD if it isn't started
+try 
+    bpod = evalin('base', 'BpodSystem');
+catch
+    if ~exist('BpodSystem', 'var')
+        Bpod();
+    end
+end
 global BpodSystem;
 
-% Start BPOD if it isn't started
-if ~exist('BpodSystem', 'var')
-    Bpod();
-end
-
 % Start PulsePal if it isn't started
-if ~exist('PulsePalSystem', 'var')
-    PulsePal();
+try
+    pulsepal = evalin('base', 'PulsePalSystem');
+    if isempty(pulsepal)
+        PulsePal;
+    end
+catch
+    if ~exist('PulsePalSystem', 'var') || isempty('PulsePalSystem', 'var')
+        PulsePal();
+    end
 end
+global PulsePalSystem;
 
 BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
 
