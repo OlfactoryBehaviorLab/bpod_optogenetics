@@ -67,15 +67,17 @@ for current_trial = 1:TOTAL_NUM_TRIALS
 
     % Params for this trial
     params = trial_params(current_trial, :);
-    trial_position = params.position;
+    trial_position_um = params.position_um;
+    trial_position_index = params.position_index;
     trial_power = params.power;
     trial_ITI = params.ITI;
-    
+    disp("Trial: " + num2str(current_trial))
+    disp(params)
     % Move Galvostation
-    galvostation.move(trial_position);
+    galvostation.move(trial_position_um);
 
     % Set Laser Power
-
+    galvostation.laser_1.configure_trial_stimulation(trial_position_index, trial_power, STIMULATION_TIME_S);
     % Assemble State Machine
     state_machine = gen_state_machine(PRE_STIM_TIME_S, STIMULATION_TIME_S, POST_STIMULATION_TIME_S, trial_ITI);
     % Send state machine
