@@ -88,6 +88,7 @@ for current_trial = 1:TOTAL_NUM_TRIALS
     SaveBpodSessionData();
 end
 
+close(galvo_gui.GalvostationManualControlUIFigure);
 galvostation = [];
 EndPulsePal;
 EndBpod;
