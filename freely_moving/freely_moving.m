@@ -74,6 +74,15 @@ end
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
 
+init_params = struct();
+init_params.GUI.trial = 0;
+init_params.GUI.position_um = 0;
+init_params.GUI.position_index = 0;
+init_params.GUI.power = 0;
+init_params.GUI.ITI = 0;
+BpodParameterGUI('init', init_params);
+
+
 for current_trial = 1:TOTAL_NUM_TRIALS
     % For each trial
 
@@ -81,6 +90,10 @@ for current_trial = 1:TOTAL_NUM_TRIALS
 
     % Params for this trial
     params = trial_params(current_trial, :);
+    gui_params = unpack_params(params);
+    gui_params.GUI.trial = current_trial;
+    gui_params = BpodParameterGUI('sync', gui_params);
+
     trial_position_um = params.position_um;
     trial_position_index = params.position_index;
     trial_power = params.power;
@@ -115,6 +128,18 @@ close(galvo_gui.GalvostationManualControlUIFigure);
 galvostation = [];
 EndPulsePal;
 EndBpod;
+
+end
+
+function GUI_struct = unpack_params(params)
+
+    fields = fieldnames(params);
+
+    for i=1:length(fields)
+        field = fields{i};
+        disp(field);
+        GUI_struct.GUI.(field) = params.(field);
+    end
 
 end
 
