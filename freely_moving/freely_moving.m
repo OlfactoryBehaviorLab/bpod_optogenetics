@@ -51,6 +51,8 @@ end
 global PulsePalSystem;
 
 BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
+PulsePalSystem.Params.LinkTriggerChannel1(:) = 0; % Uncouple all channels from triggers
+PulsePalSystem.Params.LinkTriggerChannel2(:) = 0; 
 
 % Create galvostation object
 galvostation = bpod_galvostation.galvostation(BpodSystem, 'offset_voltage', GALVOSTATION_OFFSET_V, 'calibration', [GALVOSTATION_CAL_COEFFICIENT, GALVOSTATION_CAL_CONSTANT]);
