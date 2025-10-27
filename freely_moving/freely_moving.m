@@ -22,8 +22,8 @@ PRE_STIM_TIME_S = 4; % Pre stimulation time in seconds
 STIMULATION_TIME_S = 2; % Stimulation time in seconds
 POST_STIMULATION_TIME_S = 4; % Post stimulation time in seconds
 
-MIN_ITI_S = 20; % Minimum ITI time in seconds
-MAX_ITI_S = 40; % Maximum ITI time in seconds
+MIN_ITI_S = 15; % Minimum ITI time in seconds
+MAX_ITI_S = 25; % Maximum ITI time in seconds
 
 TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
 %% Objects
