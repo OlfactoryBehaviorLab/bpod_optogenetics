@@ -84,6 +84,10 @@ init_params.GUI.power = 0;
 init_params.GUI.ITI = 0;
 BpodParameterGUI('init', init_params);
 
+%% Wait to start
+msg = create_wait_dialog(BpodSystem, galvo_gui);
+uiwait(msg);
+
 
 for current_trial = 1:TOTAL_NUM_TRIALS
     % For each trial
@@ -127,11 +131,39 @@ for current_trial = 1:TOTAL_NUM_TRIALS
     end
 end
 
-close(galvo_gui.GalvostationManualControlUIFigure);
+close_galvo_gui(galvo_gui);
 galvostation = [];
-EndPulsePal;
-EndBpod;
+%EndPulsePal;
+%EndBpod;
 
+end
+
+function wait_dialog = create_wait_dialog(BpodSystem, galvo_gui)
+    dialog_size_x = 200;
+    dialog_size_y = 80;
+
+    size = get(0, 'screensize');
+    size_x = size(3);
+    size_y = size(4);
+    dialog_position_x = size_x/2 - (dialog_size_x/2);
+    dialog_position_y = size_y/2 - (dialog_size_y/2);
+    
+    wait_dialog = dialog('Position', [dialog_position_x, dialog_position_y, dialog_size_x, dialog_size_y], 'Name', 'Start');
+    uicontrol('Parent', wait_dialog, 'Style', 'text', 'Position', [dialog_size_x/2 - 100, dialog_size_y/2-10, 200 40], 'String', 'Click start to begin experiment!');
+    uicontrol('Parent', wait_dialog, 'Position', [dialog_size_x/2 - 35, dialog_size_y/2 - 25, 70, 25], 'String', 'Start!', 'Callback', @(obj, ~)start_dialog_callback(obj, BpodSystem, galvo_gui))
+end
+
+function start_dialog_callback(obj, BpodSystem, galvo_gui)
+    if BpodSystem.Status.BeingUsed == 0
+        close_galvo_gui(galvo_gui);
+    end
+    delete(obj.Parent);
+end
+
+function close_galvo_gui(galvo_gui)
+    if isfield(galvo_gui, 'GalvostationManualControlUIFigure')
+        close(galvo_gui.GalvostationManualControlUIFigure);
+    end
 end
 
 function GUI_struct = unpack_params(params)
