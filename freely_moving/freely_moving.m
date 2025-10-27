@@ -173,7 +173,6 @@ function GUI_struct = unpack_params(params)
 
     for i=1:length(fields)
         field = fields{i};
-        disp(field);
         GUI_struct.GUI.(field) = params.(field);
     end
 
