@@ -162,7 +162,7 @@ end
 
 close_galvo_gui(galvo_gui);
 galvostation = [];
-%EndPulsePal;
+EndPulsePal;
 %EndBpod;
 
 end
