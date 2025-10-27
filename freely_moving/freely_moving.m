@@ -26,6 +26,7 @@ MIN_ITI_S = 15; % Minimum ITI time in seconds
 MAX_ITI_S = 25; % Maximum ITI time in seconds
 
 TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
+TOTAL_NUM_TRIALS = TOTAL_NUM_TRIALS + 20; % Add no stimulation trials to total
 
 %% Objects
 % Start BPOD if it isn't started
