@@ -84,6 +84,13 @@ init_params.GUI.position_um = 0;
 init_params.GUI.position_index = 0;
 init_params.GUI.power = 0;
 init_params.GUI.ITI = 0;
+
+init_params.GUI.next_trial = 0;
+init_params.GUI.next_position_um = 0;
+init_params.GUI.next_position_index = 0;
+init_params.GUI.next_power = 0;
+init_params.GUI.next_ITI = 0;
+
 BpodParameterGUI('init', init_params);
 
 %% Wait to start
@@ -100,6 +107,26 @@ for current_trial = 1:TOTAL_NUM_TRIALS
     params = trial_params(current_trial, :);
     gui_params = unpack_params(params);
     gui_params.GUI.trial = current_trial;
+
+
+    % Params for next trial
+    next_trial = current_trial + 1;
+    if next_trial > TOTAL_NUM_TRIALS
+        gui_params.GUI.next_trial = 'Done';
+        gui_params.GUI.next_position_um = 'Done';
+        gui_params.GUI.next_position_index = 'Done';
+        gui_params.GUI.next_power = 'Done';
+        gui_params.GUI.next_ITI = 'Done';
+    else
+        next_params = trial_params(next_trial, :);
+        next_gui_params = unpack_params(next_params);
+        gui_params.GUI.next_trial = next_trial;
+        gui_params.GUI.next_position_um = next_gui_params.GUI.position_um;
+        gui_params.GUI.next_position_index = next_gui_params.GUI.position_index;
+        gui_params.GUI.next_power = next_gui_params.GUI.power;
+        gui_params.GUI.next_ITI = next_gui_params.GUI.ITI;
+    end
+
     gui_params = BpodParameterGUI('sync', gui_params);
 
     trial_position_um = params.position_um;
