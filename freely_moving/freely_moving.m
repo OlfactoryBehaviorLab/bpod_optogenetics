@@ -13,9 +13,9 @@ LASER_CALIBRATIONS(3, :) = [3, 4];
 
 NUM_TRIALS_PER_POSITION = 20;
 
-DESIRED_POWERS_MW = [0.5, 1, 2]; % Stimulation power(s) in mW
-PULSE_DURATIONS_S = [-1, -1, -1]; % Pulse durations for duty-cycle; -1 indicates constant power
-INTER_PULSE_INTERVALS_S = [0, 0, 0]; % Inter-pulse-intervals for duty-cycle in seconds; 0 indicates constant power
+DESIRED_POWERS_MW = [0.5]; % Stimulation power(s) in mW
+PULSE_DURATIONS_S = [-1]; % Pulse durations for duty-cycle; -1 indicates constant power
+INTER_PULSE_INTERVALS_S = [0]; % Inter-pulse-intervals for duty-cycle in seconds; 0 indicates constant power
 
 
 PRE_STIM_TIME_S = 4; % Pre stimulation time in seconds
