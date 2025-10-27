@@ -26,6 +26,7 @@ MIN_ITI_S = 15; % Minimum ITI time in seconds
 MAX_ITI_S = 25; % Maximum ITI time in seconds
 
 TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
+
 %% Objects
 % Start BPOD if it isn't started
 try 
@@ -61,7 +62,7 @@ galvostation.laser_1.calibration_values = LASER_CALIBRATIONS;
 
 %% CHECK INPUTS
 if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
-    error("The length of DESIRED_POWERS_MW and DESIRED_DUTY_CYCLE must be the same! There must be one duty cycle per power level!");
+    error("The length of DESIRED_POWERS_MW, PULSE_DURATIONS_S, and INTER_PULSE_INTERVALS_S must be the same! There must be one duty cycle per power level!");
 end
 
 if GALVOSTATION_CAL_CONSTANT == 0 | GALVOSTATION_CAL_CONSTANT == 0
