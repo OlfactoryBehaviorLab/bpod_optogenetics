@@ -108,7 +108,7 @@ for current_trial = 1:TOTAL_NUM_TRIALS
     disp("Trial: " + num2str(current_trial))
     disp(params)
     % Move Galvostation
-    move_time = PRE_STIM_TIME_S + STIMULATION_TIME_S + 1; % Add a buffer of 1s
+    move_time = PRE_STIM_TIME_S + STIMULATION_TIME_S + POST_STIMULATION_TIME_S;
     galvostation.configure_trial_move(trial_position_um, move_time);
 
     % Set Laser Power
