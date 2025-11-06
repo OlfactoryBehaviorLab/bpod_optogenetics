@@ -165,6 +165,9 @@ galvostation = [];
 EndPulsePal;
 %EndBpod;
 
+beep();
+uiwait(msgbox("Experiment Finished!", "Finished"));
+
 end
 
 function wait_dialog = create_wait_dialog(BpodSystem, galvo_gui)
@@ -190,7 +193,7 @@ function start_dialog_callback(obj, BpodSystem, galvo_gui)
 end
 
 function close_galvo_gui(galvo_gui)
-    if isfield(galvo_gui, 'GalvostationManualControlUIFigure')
+    if isprop(galvo_gui, 'GalvostationManualControlUIFigure')
         close(galvo_gui.GalvostationManualControlUIFigure);
     end
 end
