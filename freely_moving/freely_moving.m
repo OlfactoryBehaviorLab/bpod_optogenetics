@@ -1,15 +1,15 @@
 function freely_moving
 %% EXPERIMENT PARAMETERS
-GALVOSTATION_CAL_COEFFICIENT = 1;
-GALVOSTATION_CAL_CONSTANT = 2;
+GALVOSTATION_CAL_COEFFICIENT = 2.703;
+GALVOSTATION_CAL_CONSTANT = 0.217;
 GALVOSTATION_OFFSET_V = 0.075;
 
 STIMULATION_POSITIONS = [250, 750, 1250]; % Center(s) in um of stimulation positions; stimulation is +/- 250um of center
 
 LASER_CALIBRATIONS = []; % Each galvostation position attenuates the laser slightly differently; so each position will need a slightly
-LASER_CALIBRATIONS(1, :) = [1, 2]; % different set of calibration values to ensure the power is delivered consistently
-LASER_CALIBRATIONS(2, :) = [2, 3]; % Each calibration should be two values in the form [coefficient, constant] based on a linear fit
-LASER_CALIBRATIONS(3, :) = [3, 4];
+LASER_CALIBRATIONS(1, :) = [2.0966, -1.9703]; % different set of calibration values to ensure the power is delivered consistently
+LASER_CALIBRATIONS(2, :) = [1.9434, -1.8747]; % Each calibration should be two values in the form [coefficient, constant] based on a linear fit
+LASER_CALIBRATIONS(3, :) = [1.7618, -1.7209];
 
 NUM_TRIALS_PER_POSITION = 20;
 
@@ -24,6 +24,8 @@ POST_STIMULATION_TIME_S = 4; % Post stimulation time in seconds
 
 MIN_ITI_S = 15; % Minimum ITI time in seconds
 MAX_ITI_S = 25; % Maximum ITI time in seconds
+
+%% NO TOUCH BELOW
 
 TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
 TOTAL_NUM_TRIALS = TOTAL_NUM_TRIALS + 20; % Add no stimulation trials to total
@@ -73,6 +75,28 @@ end
 if size(LASER_CALIBRATIONS, 1) ~= length(STIMULATION_POSITIONS)
     error("Please provide a laser calibration for each stimulation position!");
 end
+
+%% Save Global Parameters
+GlobalParams = {};
+GlobalParams.Galvostation.Calibration_Coefficient = GALVOSTATION_CAL_CONSTANT;
+GlobalParams.Galvostation.Calibration_Constant = GALVOSTATION_CAL_CONSTANT;
+GlobalParams.Galvostation.Offset_Voltage = GALVOSTATION_OFFSET_V;
+
+GlobalParams.Laser_Calibrations = LASER_CALIBRATIONS;
+
+GlobalParams.Trial_Structure.Num_Trials_Per_Position = NUM_TRIALS_PER_POSITION;
+GlobalParams.Trial_Structure.Total_Trials = TOTAL_NUM_TRIALS;
+GlobalParams.Trial_Structure.Stimulation_Positions = STIMULATION_POSITIONS;
+GlobalParams.Trial_Structure.Desired_Powers_mw = DESIRED_POWERS_MW;
+GlobalParams.Trial_Structure.Pulse_Durations_s = PULSE_DURATIONS_S;
+GlobalParams.Trial_Structure.Inter_Pulse_Intervals_s = INTER_PULSE_INTERVALS_S;
+GlobalParams.Trial_Structure.Pre_Stim_Time_s = PRE_STIM_TIME_S;
+GlobalParams.Trial_Structure.Stim_Time_s = STIMULATION_TIME_S;
+GlobalParams.Trial_Structure.Post_Stim_Time_s = POST_STIMULATION_TIME_S;
+GlobalParams.Trial_Structure.ITI_Min_s = MIN_ITI_S;
+GlobalParams.Trial_Structure.ITI_Max_s = MAX_ITI_S;
+
+BpodSystem.Data.GlobalParams = GlobalParams;
 
 %% Implement Experiment
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
@@ -153,6 +177,7 @@ for current_trial = 1:TOTAL_NUM_TRIALS
         BpodSystem.Data.TrialSettings(current_trial, :) = params;
         SaveBpodSessionData();
     end
+    
     HandlePauseCondition;
     
     if BpodSystem.Status.BeingUsed == 0
