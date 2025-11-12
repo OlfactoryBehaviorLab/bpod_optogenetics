@@ -42,26 +42,26 @@ end
 global BpodSystem;
 
 % Start PulsePal if it isn't started
-try
-    pulsepal = evalin('base', 'PulsePalSystem');
-    if isempty(pulsepal)
-        PulsePal;
-    end
-catch
-    if ~exist('PulsePalSystem', 'var') || isempty('PulsePalSystem', 'var')
-        PulsePal();
-    end
-end
-global PulsePalSystem;
+% try
+%     pulsepal = evalin('base', 'PulsePalSystem');
+%     if isempty(pulsepal)
+%         PulsePal;
+%     end
+% catch
+%     if ~exist('PulsePalSystem', 'var') || isempty('PulsePalSystem', 'var')
+%         PulsePal();
+%     end
+% end
+% global PulsePalSystem;
 
-BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
-PulsePalSystem.Params.LinkTriggerChannel1(:) = 0; % Uncouple all channels from triggers
-PulsePalSystem.Params.LinkTriggerChannel2(:) = 0; 
+% BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
+% PulsePalSystem.Params.LinkTriggerChannel1(:) = 0; % Uncouple all channels from triggers
+% PulsePalSystem.Params.LinkTriggerChannel2(:) = 0; 
 
-% Create galvostation object
-galvostation = bpod_galvostation.galvostation(BpodSystem, 'offset_voltage', GALVOSTATION_OFFSET_V, 'calibration', [GALVOSTATION_CAL_COEFFICIENT, GALVOSTATION_CAL_CONSTANT]);
-galvo_gui = bpod_galvostation.gui.main_gui(galvostation);
-galvostation.laser_1.calibration_values = LASER_CALIBRATIONS;
+% % Create galvostation object
+% galvostation = bpod_galvostation.galvostation(BpodSystem, 'offset_voltage', GALVOSTATION_OFFSET_V, 'calibration', [GALVOSTATION_CAL_COEFFICIENT, GALVOSTATION_CAL_CONSTANT]);
+% galvo_gui = bpod_galvostation.gui.main_gui(galvostation);
+% galvostation.laser_1.calibration_values = LASER_CALIBRATIONS;
 
 %% CHECK INPUTS
 if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
@@ -99,15 +99,21 @@ GlobalParams.Trial_Structure.ITI_Max_s = MAX_ITI_S;
 BpodSystem.Data.GlobalParams = GlobalParams;
 
 % Experiment GUI
-path_componets = parse_path(BpodSystem.Path.CurrentDataFile);
+path_components = parse_path(BpodSystem.Path.CurrentDataFile);
+% Pull mouse and experiment from path
+% Path must be in form C:\[BPOD_DATA_DIR]\[ANIMAL]\[EXPERIMENT]
+% Extra subdirectory will throw it off for now
 
 gui_setup_struct = {};
 gui_setup_struct.defaults = GlobalParams;
 gui_setup_struct.bpod = BpodSystem;
 gui_setup_struct.mouse = path_components.mouse;
 gui_setup_struct.experiment = path_components.experiment;
+gui_setup_struct.start_handle = @(~, ~)start_button_callback;
+gui_setup_struct.stop_handle = @(~, ~)stop_button_callback;
+gui_setup_struct.pause_handle = @(~, ~)pause_button_callback;
 
-gui = interface();
+gui = interface(gui_setup_struct);
 
 %% Implement Experiment
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
@@ -281,4 +287,16 @@ function components = parse_path(full_path)
     split_path = split(full_path, '\');
     components.mouse = split_path{3};
     components.experiment = split_path{4};
+end
+
+function start_button_callback()
+    disp("Start Clicked!");
+end
+
+function stop_button_callback()
+    disp("Stop Clicked!");
+end
+
+function pause_button_callback()
+    disp("Pause Clicked!");
 end
