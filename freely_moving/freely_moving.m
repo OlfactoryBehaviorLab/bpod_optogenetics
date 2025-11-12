@@ -132,56 +132,36 @@ BpodSystem.Timers.experiment_timer = experiment_timer;
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
 
-init_params = struct();
-init_params.GUI.trial = 0;
-init_params.GUI.position_um = 0;
-init_params.GUI.position_index = 0;
-init_params.GUI.power = 0;
-init_params.GUI.ITI = 0;
-
-init_params.GUI.next_trial = 0;
-init_params.GUI.next_position_um = 0;
-init_params.GUI.next_position_index = 0;
-init_params.GUI.next_power = 0;
-init_params.GUI.next_ITI = 0;
-
-BpodParameterGUI('init', init_params);
-
-%% Wait to start
-msg = create_wait_dialog(BpodSystem, galvo_gui);
-uiwait(msg);
+while ~gui.start
+    pause(0.1)
+end
 
 
 for current_trial = 1:TOTAL_NUM_TRIALS
     % For each trial
-
-    % TODO: Lock galvostation GUI but still update the display
-
     % Params for this trial
+    gui_update_data = {}
+
     params = trial_params(current_trial, :);
-    gui_params = unpack_params(params);
-    gui_params.GUI.trial = current_trial;
+    gui_update_data.trial_number = current_trial;
+    gui_update_data.current_position = params.position_um;
+    gui_update_data.current_power = params.power;
+    gui_update_data.current_ITI = params.ITI;
 
 
-    % Params for next trial
     next_trial = current_trial + 1;
     if next_trial > TOTAL_NUM_TRIALS
-        gui_params.GUI.next_trial = 'Done';
-        gui_params.GUI.next_position_um = 'Done';
-        gui_params.GUI.next_position_index = 'Done';
-        gui_params.GUI.next_power = 'Done';
-        gui_params.GUI.next_ITI = 'Done';
+        gui_update_data.next_position = 'Done';
+        gui_update_data.next_power = 'Done';
+        gui_update_data.next_ITI = 'Done';
     else
         next_params = trial_params(next_trial, :);
-        next_gui_params = unpack_params(next_params);
-        gui_params.GUI.next_trial = next_trial;
-        gui_params.GUI.next_position_um = next_gui_params.GUI.position_um;
-        gui_params.GUI.next_position_index = next_gui_params.GUI.position_index;
-        gui_params.GUI.next_power = next_gui_params.GUI.power;
-        gui_params.GUI.next_ITI = next_gui_params.GUI.ITI;
+        gui_update_data.next_position =  next_params.position_um;
+        gui_update_data.next_power = next_params.power;
+        gui_update_data.next_ITI = next_params.ITI;
     end
 
-    gui_params = BpodParameterGUI('sync', gui_params);
+    gui.update_trial_info(gui_update_data);
 
     trial_position_um = params.position_um;
     trial_position_index = params.position_index;
@@ -191,10 +171,10 @@ for current_trial = 1:TOTAL_NUM_TRIALS
     disp(params)
     % Move Galvostation
     move_time = PRE_STIM_TIME_S + STIMULATION_TIME_S + POST_STIMULATION_TIME_S;
-    galvostation.configure_trial_move(trial_position_um, move_time);
+    % galvostation.configure_trial_move(trial_position_um, move_time);
 
     % Set Laser Power
-    galvostation.laser_1.configure_trial_stimulation(trial_position_index, trial_power, STIMULATION_TIME_S);
+    % galvostation.laser_1.configure_trial_stimulation(trial_position_index, trial_power, STIMULATION_TIME_S);
     % Assemble State Machine
     state_machine = gen_state_machine(PRE_STIM_TIME_S, STIMULATION_TIME_S, POST_STIMULATION_TIME_S, trial_ITI);
     % Send state machine
@@ -316,7 +296,9 @@ function start_button_callback()
 end
 
 function stop_button_callback()
+    global BpodSystem;
     disp("Stop Clicked!");
+    stop(BpodSystem.Timers.experiment_timer);
     delete(BpodSystem.Timers.experiment_timer);
 end
 
