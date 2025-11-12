@@ -195,13 +195,17 @@ for current_trial = 1:TOTAL_NUM_TRIALS
     end
 end
 
-close_galvo_gui(galvo_gui);
-galvostation = [];
-EndPulsePal;
+% close_galvo_gui(galvo_gui);
+% galvostation = [];
+% EndPulsePal;
 %EndBpod;
 
 beep();
 uiwait(msgbox("Experiment Finished!", "Finished"));
+
+end
+
+function run_experiment()
 
 end
 
@@ -300,6 +304,7 @@ function stop_button_callback()
     disp("Stop Clicked!");
     stop(BpodSystem.Timers.experiment_timer);
     delete(BpodSystem.Timers.experiment_timer);
+    BpodSystem.Status.BeingUsed = 0;
 end
 
 function pause_button_callback()
