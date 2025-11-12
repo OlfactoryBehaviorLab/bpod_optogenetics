@@ -1,3 +1,4 @@
+%% MUST LAUNCH THROUGH PROTOCOL LAUNCHER
 function freely_moving
 %% EXPERIMENT PARAMETERS
 GALVOSTATION_CAL_COEFFICIENT = 2.703;
@@ -99,7 +100,11 @@ GlobalParams.Trial_Structure.ITI_Max_s = MAX_ITI_S;
 BpodSystem.Data.GlobalParams = GlobalParams;
 
 % Experiment GUI
-path_components = parse_path(BpodSystem.Path.CurrentDataFile);
+if isempty(BpodSystem.Path.CurrentDataFile)
+    error("Please launch freely_moving from the Bpod Protocol Manager!");
+else
+    path_components = parse_path(BpodSystem.Path.CurrentDataFile);
+end
 % Pull mouse and experiment from path
 % Path must be in form C:\[BPOD_DATA_DIR]\[ANIMAL]\[EXPERIMENT]
 % Extra subdirectory will throw it off for now
