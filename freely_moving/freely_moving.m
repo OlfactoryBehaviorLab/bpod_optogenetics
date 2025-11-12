@@ -120,6 +120,14 @@ gui_setup_struct.pause_handle = @(~, ~)pause_button_callback;
 
 gui = interface(gui_setup_struct);
 
+experiment_timer = timer;
+experiment_timer.Name = "experiment_timer";
+experiment_timer.ExecutionMode = "fixedRate";
+experiment_timer.UserData.experiment_time_elapsed_seconds = 0;
+experiment_timer.TimerFcn = @(timer, ~)timer_callback(timer, gui);
+
+BpodSystem.Timers.experiment_timer = experiment_timer;
+
 %% Implement Experiment
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
@@ -294,12 +302,22 @@ function components = parse_path(full_path)
     components.experiment = split_path{4};
 end
 
+function timer_callback(timer, gui)
+    current_time = timer.UserData.experiment_time_elapsed_seconds;
+    new_time = current_time + 1;
+    timer.UserData.experiment_time_elapsed_seconds = new_time;
+    gui.update_timer(new_time);
+end
+
 function start_button_callback()
+    global BpodSystem;
     disp("Start Clicked!");
+    start(BpodSystem.Timers.experiment_timer);
 end
 
 function stop_button_callback()
     disp("Stop Clicked!");
+    delete(BpodSystem.Timers.experiment_timer);
 end
 
 function pause_button_callback()
