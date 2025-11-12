@@ -98,6 +98,17 @@ GlobalParams.Trial_Structure.ITI_Max_s = MAX_ITI_S;
 
 BpodSystem.Data.GlobalParams = GlobalParams;
 
+% Experiment GUI
+path_componets = parse_path(BpodSystem.Path.CurrentDataFile);
+
+gui_setup_struct = {};
+gui_setup_struct.defaults = GlobalParams;
+gui_setup_struct.bpod = BpodSystem;
+gui_setup_struct.mouse = path_components.mouse;
+gui_setup_struct.experiment = path_components.experiment;
+
+gui = interface();
+
 %% Implement Experiment
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
@@ -264,4 +275,10 @@ function state_machine = gen_state_machine(pre_stim_time_s, stim_time_s, post_st
         'StateChangeConditions', {'Tup', 'exit'},...
         'OutputActions', {}...
     );
+end
+
+function components = parse_path(full_path)
+    split_path = split(full_path, '\');
+    components.mouse = split_path{3};
+    components.experiment = split_path{4};
 end
