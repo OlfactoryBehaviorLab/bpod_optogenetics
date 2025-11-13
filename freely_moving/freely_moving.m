@@ -1,35 +1,34 @@
 %% MUST LAUNCH THROUGH PROTOCOL LAUNCHER
 function freely_moving
-%% EXPERIMENT PARAMETERS
+%% CALIBRATION VALUES
 GALVOSTATION_CAL_COEFFICIENT = 2.703;
 GALVOSTATION_CAL_CONSTANT = 0.217;
 GALVOSTATION_OFFSET_V = 0.075;
-
-STIMULATION_POSITIONS = [250, 750, 1250]; % Center(s) in um of stimulation positions; stimulation is +/- 250um of center
 
 LASER_CALIBRATIONS = []; % Each galvostation position attenuates the laser slightly differently; so each position will need a slightly
 LASER_CALIBRATIONS(1, :) = [2.0966, -1.9703]; % different set of calibration values to ensure the power is delivered consistently
 LASER_CALIBRATIONS(2, :) = [1.9434, -1.8747]; % Each calibration should be two values in the form [coefficient, constant] based on a linear fit
 LASER_CALIBRATIONS(3, :) = [1.7618, -1.7209];
 
-NUM_TRIALS_PER_POSITION = 20;
 
-DESIRED_POWERS_MW = [0.5]; % Stimulation power(s) in mW
-PULSE_DURATIONS_S = [-1]; % Pulse durations for duty-cycle; -1 indicates constant power
-INTER_PULSE_INTERVALS_S = [0]; % Inter-pulse-intervals for duty-cycle in seconds; 0 indicates constant power
+%% DEFAULT VALUES
+DEFAULTS = {};
+DEFAULTS.STIMULATION_POSITIONS = [250, 750, 1250]; % Center(s) in um of stimulation positions; stimulation is +/- 250um of center
 
+DEFAULTS.NUM_TRIALS_PER_POSITION = 20;
 
-PRE_STIM_TIME_S = 4; % Pre stimulation time in seconds
-STIMULATION_TIME_S = 2; % Stimulation time in seconds
-POST_STIMULATION_TIME_S = 4; % Post stimulation time in seconds
+DEFAULTS.DESIRED_POWERS_MW = [0.5]; % Stimulation power(s) in mW
+DEFAULTS.PULSE_DURATIONS_S = [-1]; % Pulse durations for duty-cycle; -1 indicates constant power
+DEFAULTS.INTER_PULSE_INTERVALS_S = [0]; % Inter-pulse-intervals for duty-cycle in seconds; 0 indicates constant power
 
-MIN_ITI_S = 15; % Minimum ITI time in seconds
-MAX_ITI_S = 25; % Maximum ITI time in seconds
+DEFAULTS.PRE_STIM_TIME_S = 4; % Pre stimulation time in seconds
+DEFAULTS.STIMULATION_TIME_S = 2; % Stimulation time in seconds
+DEFAULTS.POST_STIMULATION_TIME_S = 4; % Post stimulation time in seconds
 
-%% NO TOUCH BELOW
+DEFAULTS.MIN_ITI_S = 15; % Minimum ITI time in seconds
+DEFAULTS.MAX_ITI_S = 25; % Maximum ITI time in seconds
 
-TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
-TOTAL_NUM_TRIALS = TOTAL_NUM_TRIALS + 20; % Add no stimulation trials to total
+%% ============NO TOUCH BELOW================== %%
 
 %% Objects
 % Start BPOD if it isn't started
@@ -65,39 +64,17 @@ global BpodSystem;
 % galvostation.laser_1.calibration_values = LASER_CALIBRATIONS;
 
 %% CHECK INPUTS
-if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
-    error("The length of DESIRED_POWERS_MW, PULSE_DURATIONS_S, and INTER_PULSE_INTERVALS_S must be the same! There must be one duty cycle per power level!");
-end
-
-if GALVOSTATION_CAL_CONSTANT == 0 | GALVOSTATION_CAL_CONSTANT == 0
-    error("Please provide calibration values for the Galvostation!");
-end
-
-if size(LASER_CALIBRATIONS, 1) ~= length(STIMULATION_POSITIONS)
-    error("Please provide a laser calibration for each stimulation position!");
-end
-
-%% Save Global Parameters
-GlobalParams = {};
-GlobalParams.Galvostation.Calibration_Coefficient = GALVOSTATION_CAL_CONSTANT;
-GlobalParams.Galvostation.Calibration_Constant = GALVOSTATION_CAL_CONSTANT;
-GlobalParams.Galvostation.Offset_Voltage = GALVOSTATION_OFFSET_V;
-
-GlobalParams.Laser_Calibrations = LASER_CALIBRATIONS;
-
-GlobalParams.Trial_Structure.Num_Trials_Per_Position = NUM_TRIALS_PER_POSITION;
-GlobalParams.Trial_Structure.Total_Trials = TOTAL_NUM_TRIALS;
-GlobalParams.Trial_Structure.Stimulation_Positions = STIMULATION_POSITIONS;
-GlobalParams.Trial_Structure.Desired_Powers_mw = DESIRED_POWERS_MW;
-GlobalParams.Trial_Structure.Pulse_Durations_s = PULSE_DURATIONS_S;
-GlobalParams.Trial_Structure.Inter_Pulse_Intervals_s = INTER_PULSE_INTERVALS_S;
-GlobalParams.Trial_Structure.Pre_Stim_Time_s = PRE_STIM_TIME_S;
-GlobalParams.Trial_Structure.Stim_Time_s = STIMULATION_TIME_S;
-GlobalParams.Trial_Structure.Post_Stim_Time_s = POST_STIMULATION_TIME_S;
-GlobalParams.Trial_Structure.ITI_Min_s = MIN_ITI_S;
-GlobalParams.Trial_Structure.ITI_Max_s = MAX_ITI_S;
-
-BpodSystem.Data.GlobalParams = GlobalParams;
+% if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
+%     error("The length of DESIRED_POWERS_MW, PULSE_DURATIONS_S, and INTER_PULSE_INTERVALS_S must be the same! There must be one duty cycle per power level!");
+% end
+% 
+% if GALVOSTATION_CAL_CONSTANT == 0 | GALVOSTATION_CAL_CONSTANT == 0
+%     error("Please provide calibration values for the Galvostation!");
+% end
+% 
+% if size(LASER_CALIBRATIONS, 1) ~= length(STIMULATION_POSITIONS)
+%     error("Please provide a laser calibration for each stimulation position!");
+% end
 
 % Experiment GUI
 if isempty(BpodSystem.Path.CurrentDataFile)
@@ -110,8 +87,8 @@ end
 % Extra subdirectory will throw it off for now
 
 gui_setup_struct = {};
-gui_setup_struct.defaults = GlobalParams;
-gui_setup_struct.bpod = BpodSystem;
+gui_setup_struct.defaults = DEFAULTS; % Not used currently
+gui_setup_struct.bpod = BpodSystem; % Not used currently
 gui_setup_struct.mouse = path_components.mouse;
 gui_setup_struct.experiment = path_components.experiment;
 gui_setup_struct.start_handle = @(~, ~)start_button_callback;
@@ -125,17 +102,53 @@ experiment_timer.Name = "experiment_timer";
 experiment_timer.ExecutionMode = "fixedRate";
 experiment_timer.UserData.experiment_time_elapsed_seconds = 0;
 experiment_timer.TimerFcn = @(timer, ~)timer_callback(timer, gui);
-
 BpodSystem.Timers.experiment_timer = experiment_timer;
 
 %% Implement Experiment
-trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
-trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
-
 while ~gui.start
     pause(0.1)
 end
 
+%% Get Parameters from GUI
+user_supplied_params = gui.return_params();
+NUM_TRIALS_PER_POSITION = user_supplied_params.trials_per_state;3
+STIMULATION_POSITIONS = sort(str2double(user_supplied_params.positions)); % Make sure they are in order from smallest -> largest for the calibration selection
+DESIRED_POWERS_MW = str2double(user_supplied_params.power);
+MIN_ITI_S = user_supplied_params.min_ITI;
+MAX_ITI_S = user_supplied_params.max_ITI;
+PRE_STIM_TIME_S = user_supplied_params.pre_stim_s;
+STIMULATION_TIME_S = user_supplied_params.stim_s;
+POST_STIMULATION_TIME_S = user_supplied_params.post_stim_s;
+disp(length(user_supplied_params.trials_per_state))
+
+
+TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
+TOTAL_NUM_TRIALS = TOTAL_NUM_TRIALS + 20; % Add no stimulation trials to total
+
+%% Save Global Parameters
+GlobalParams = {};
+GlobalParams.Galvostation.Calibration_Coefficient = GALVOSTATION_CAL_CONSTANT;
+GlobalParams.Galvostation.Calibration_Constant = GALVOSTATION_CAL_CONSTANT;
+GlobalParams.Galvostation.Offset_Voltage = GALVOSTATION_OFFSET_V;
+
+GlobalParams.Laser_Calibrations = LASER_CALIBRATIONS;
+
+GlobalParams.Trial_Structure.Num_Trials_Per_Position = NUM_TRIALS_PER_POSITION;
+GlobalParams.Trial_Structure.Total_Trials = TOTAL_NUM_TRIALS;
+GlobalParams.Trial_Structure.Stimulation_Positions = STIMULATION_POSITIONS;
+GlobalParams.Trial_Structure.Desired_Powers_mw = DESIRED_POWERS_MW;
+% GlobalParams.Trial_Structure.Pulse_Durations_s = PULSE_DURATIONS_S;
+% GlobalParams.Trial_Structure.Inter_Pulse_Intervals_s = INTER_PULSE_INTERVALS_S;
+GlobalParams.Trial_Structure.Pre_Stim_Time_s = PRE_STIM_TIME_S;
+GlobalParams.Trial_Structure.Stim_Time_s = STIMULATION_TIME_S;
+GlobalParams.Trial_Structure.Post_Stim_Time_s = POST_STIMULATION_TIME_S;
+GlobalParams.Trial_Structure.ITI_Min_s = MIN_ITI_S;
+GlobalParams.Trial_Structure.ITI_Max_s = MAX_ITI_S;
+
+BpodSystem.Data.GlobalParams = GlobalParams;
+
+trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
+trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
 
 for current_trial = 1:TOTAL_NUM_TRIALS
     % For each trial
@@ -202,10 +215,6 @@ end
 
 beep();
 uiwait(msgbox("Experiment Finished!", "Finished"));
-
-end
-
-function run_experiment()
 
 end
 
