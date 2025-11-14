@@ -322,15 +322,19 @@ function start_button_callback(app)
     app.start = true;
 end
 
-function stop_button_callback()
+function stop_button_callback(app)
     global BpodSystem;
     %disp("Stop Triggered!");
-    BpodSystem.Status.BeingUsed = 0;
+    if BpodSystem.Status.BeingUsed
+        BpodSystem.Status.BeingUsed = 0;
+        app.open_wait_dialog();
+    end
 end
 
 function pause_button_callback()
     disp("Pause Clicked!");
 end
+
 
 function close_gui_callback(gui)
 % src is the GUI figure
@@ -359,5 +363,6 @@ function cleanup(gui)
         delete(BpodSystem.Timers.experiment_timer);
         BpodSystem.Timers = rmfield(BpodSystem.Timers, 'experiment_timer');
         gui.can_close = true;
+        delete(gui.wait_dialog);
     end
 end
