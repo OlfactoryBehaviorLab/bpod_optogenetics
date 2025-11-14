@@ -42,26 +42,26 @@ end
 global BpodSystem;
 
 % Start PulsePal if it isn't started
-% try
-%     pulsepal = evalin('base', 'PulsePalSystem');
-%     if isempty(pulsepal)
-%         PulsePal;
-%     end
-% catch
-%     if ~exist('PulsePalSystem', 'var') || isempty('PulsePalSystem', 'var')
-%         PulsePal();
-%     end
-% end
-% global PulsePalSystem;
+try
+    pulsepal = evalin('base', 'PulsePalSystem');
+    if isempty(pulsepal)
+        PulsePal;
+    end
+catch
+    if ~exist('PulsePalSystem', 'var') || isempty('PulsePalSystem', 'var')
+        PulsePal();
+    end
+end
+global PulsePalSystem;
 
-% BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
-% PulsePalSystem.Params.LinkTriggerChannel1(:) = 0; % Uncouple all channels from triggers
-% PulsePalSystem.Params.LinkTriggerChannel2(:) = 0; 
+BpodSystem.PluginObjects.PulsePal = PulsePalSystem;  % Bpod is gonna hold onto the PulsePal
+PulsePalSystem.Params.LinkTriggerChannel1(:) = 0; % Uncouple all channels from triggers
+PulsePalSystem.Params.LinkTriggerChannel2(:) = 0; 
 
-% % Create galvostation object
-% galvostation = bpod_galvostation.galvostation(BpodSystem, 'offset_voltage', GALVOSTATION_OFFSET_V, 'calibration', [GALVOSTATION_CAL_COEFFICIENT, GALVOSTATION_CAL_CONSTANT]);
-% galvo_gui = bpod_galvostation.gui.main_gui(galvostation);
-% galvostation.laser_1.calibration_values = LASER_CALIBRATIONS;
+% Create galvostation object
+galvostation = bpod_galvostation.galvostation(BpodSystem, 'offset_voltage', GALVOSTATION_OFFSET_V, 'calibration', [GALVOSTATION_CAL_COEFFICIENT, GALVOSTATION_CAL_CONSTANT]);
+galvo_gui = bpod_galvostation.gui.main_gui(galvostation);
+galvostation.laser_1.calibration_values = LASER_CALIBRATIONS;
 
 %% CHECK INPUTS
 % if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
