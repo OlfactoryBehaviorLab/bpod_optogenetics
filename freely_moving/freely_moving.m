@@ -108,7 +108,7 @@ BpodSystem.Timers.experiment_timer = experiment_timer;
 %% Implement Experiment
 while true
     % If we close the GUI early break this; otherwise, wait for start
-    if ~gui.figure.Visible
+    if gui.early_close
         disp("GUI Closed Early, aborting!");
         break;
     elseif gui.start
@@ -117,6 +117,9 @@ while true
 
     pause(0.1);
 end
+
+if gui.start
+% If the GUI was closed early don't actually run the experiment
 
 %% Get Parameters from GUI
 user_supplied_params = gui.return_params();
@@ -157,8 +160,7 @@ BpodSystem.Data.GlobalParams = GlobalParams;
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
 
-if gui.start
-    % If the GUI was closed early don't actually run the experiment
+
     for current_trial = 1:TOTAL_NUM_TRIALS
         % For each trial
         % Params for this trial
@@ -218,14 +220,14 @@ if gui.start
     end
 end
 
-stop_timer_and_delete(gui.figure);
+cleanup(gui);
 % close_galvo_gui(galvo_gui);
 % galvostation = [];
 % EndPulsePal;
 %EndBpod;
 
-beep();
-uiwait(msgbox("Experiment Finished!", "Finished"));
+%beep();
+%uiwait(msgbox("Experiment Finished!", "Finished"));
 
 end
 
@@ -315,14 +317,14 @@ end
 
 function start_button_callback(app)
     global BpodSystem;
-    disp("Start Clicked!");
+    %disp("Start Clicked!");
     start(BpodSystem.Timers.experiment_timer);
     app.start = true;
 end
 
 function stop_button_callback()
     global BpodSystem;
-    disp("Stop Triggered!");
+    %disp("Stop Triggered!");
     BpodSystem.Status.BeingUsed = 0;
 end
 
@@ -330,16 +332,32 @@ function pause_button_callback()
     disp("Pause Clicked!");
 end
 
-function close_gui_callback(src, ~)
+function close_gui_callback(gui)
 % src is the GUI figure
-    disp("Close Triggered")
-    src.Visible = false;
-    stop_button_callback();
+    global BpodSystem;
+    %disp("Close Triggered")
+    if BpodSystem.Status.BeingUsed
+        % If still running, lets make them manually stop the experiment
+        msgbox("End current session before closing the GUI!")
+    else
+        if gui.can_close
+            % Only let the figure close if 
+            disp("Closing Figure!")
+            delete(gui.figure)
+        elseif ~gui.start
+            gui.early_close = true;
+        end
+    end
+    % stop_button_callback();
 end
 
-function stop_timers(gui)
+function cleanup(gui)
     global BpodSystem;
-    stop(BpodSystem.Timers.experiment_timer);
-    delete(BpodSystem.Timers.experiment_timer);
-    delete(gui);
+    if isfield(BpodSystem.Timers, 'experiment_timer')
+        disp("Stopping and removing timer!")
+        stop(BpodSystem.Timers.experiment_timer);
+        delete(BpodSystem.Timers.experiment_timer);
+        BpodSystem.Timers = rmfield(BpodSystem.Timers, 'experiment_timer');
+        gui.can_close = true;
+    end
 end
