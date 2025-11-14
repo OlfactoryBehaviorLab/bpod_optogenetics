@@ -91,9 +91,10 @@ gui_setup_struct.defaults = DEFAULTS; % Not used currently
 gui_setup_struct.bpod = BpodSystem; % Not used currently
 gui_setup_struct.mouse = path_components.mouse;
 gui_setup_struct.experiment = path_components.experiment;
-gui_setup_struct.start_handle = @(~, ~)start_button_callback;
-gui_setup_struct.stop_handle = @(~, ~)stop_button_callback;
-gui_setup_struct.pause_handle = @(~, ~)pause_button_callback;
+gui_setup_struct.start_handle = @start_button_callback;
+gui_setup_struct.stop_handle = @stop_button_callback;
+gui_setup_struct.pause_handle = @pause_button_callback;
+gui_setup_struct.close_handle = @close_gui_callback;
 
 gui = interface(gui_setup_struct);
 
@@ -105,13 +106,21 @@ experiment_timer.TimerFcn = @(timer, ~)timer_callback(timer, gui);
 BpodSystem.Timers.experiment_timer = experiment_timer;
 
 %% Implement Experiment
-while ~gui.start
-    pause(0.1)
+while true
+    % If we close the GUI early break this; otherwise, wait for start
+    if ~gui.figure.Visible
+        disp("GUI Closed Early, aborting!");
+        break;
+    elseif gui.start
+        break;
+    end
+
+    pause(0.1);
 end
 
 %% Get Parameters from GUI
 user_supplied_params = gui.return_params();
-NUM_TRIALS_PER_POSITION = user_supplied_params.trials_per_state;3
+NUM_TRIALS_PER_POSITION = user_supplied_params.trials_per_state;
 STIMULATION_POSITIONS = sort(str2double(user_supplied_params.positions)); % Make sure they are in order from smallest -> largest for the calibration selection
 DESIRED_POWERS_MW = str2double(user_supplied_params.power);
 MIN_ITI_S = user_supplied_params.min_ITI;
@@ -119,8 +128,6 @@ MAX_ITI_S = user_supplied_params.max_ITI;
 PRE_STIM_TIME_S = user_supplied_params.pre_stim_s;
 STIMULATION_TIME_S = user_supplied_params.stim_s;
 POST_STIMULATION_TIME_S = user_supplied_params.post_stim_s;
-disp(length(user_supplied_params.trials_per_state))
-
 
 TOTAL_NUM_TRIALS = NUM_TRIALS_PER_POSITION * length(STIMULATION_POSITIONS) * length(DESIRED_POWERS_MW);
 TOTAL_NUM_TRIALS = TOTAL_NUM_TRIALS + 20; % Add no stimulation trials to total
@@ -150,64 +157,68 @@ BpodSystem.Data.GlobalParams = GlobalParams;
 trial_params = gen_trial_stim_params(NUM_TRIALS_PER_POSITION, STIMULATION_POSITIONS, DESIRED_POWERS_MW);
 trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Generate an ITI between MIN_ITI_S and MAX_ITI_S for each row in stim params
 
-for current_trial = 1:TOTAL_NUM_TRIALS
-    % For each trial
-    % Params for this trial
-    gui_update_data = {}
-
-    params = trial_params(current_trial, :);
-    gui_update_data.trial_number = current_trial;
-    gui_update_data.current_position = params.position_um;
-    gui_update_data.current_power = params.power;
-    gui_update_data.current_ITI = params.ITI;
-
-
-    next_trial = current_trial + 1;
-    if next_trial > TOTAL_NUM_TRIALS
-        gui_update_data.next_position = 'Done';
-        gui_update_data.next_power = 'Done';
-        gui_update_data.next_ITI = 'Done';
-    else
-        next_params = trial_params(next_trial, :);
-        gui_update_data.next_position =  next_params.position_um;
-        gui_update_data.next_power = next_params.power;
-        gui_update_data.next_ITI = next_params.ITI;
-    end
-
-    gui.update_trial_info(gui_update_data);
-
-    trial_position_um = params.position_um;
-    trial_position_index = params.position_index;
-    trial_power = params.power;
-    trial_ITI = params.ITI;
-    disp("Trial: " + num2str(current_trial))
-    disp(params)
-    % Move Galvostation
-    move_time = PRE_STIM_TIME_S + STIMULATION_TIME_S + POST_STIMULATION_TIME_S;
-    % galvostation.configure_trial_move(trial_position_um, move_time);
-
-    % Set Laser Power
-    % galvostation.laser_1.configure_trial_stimulation(trial_position_index, trial_power, STIMULATION_TIME_S);
-    % Assemble State Machine
-    state_machine = gen_state_machine(PRE_STIM_TIME_S, STIMULATION_TIME_S, POST_STIMULATION_TIME_S, trial_ITI);
-    % Send state machine
-    SendStateMachine(state_machine);
-    % Wait for data to come back
-    raw_events = RunStateMachine();
-    % Save data
-    if ~isempty(fieldnames(raw_events))
-        BpodSystem.Data = AddTrialEvents(BpodSystem.Data, raw_events);
-        BpodSystem.Data.TrialSettings(current_trial, :) = params;
-        SaveBpodSessionData();
-    end
+if gui.start
+    % If the GUI was closed early don't actually run the experiment
+    for current_trial = 1:TOTAL_NUM_TRIALS
+        % For each trial
+        % Params for this trial
+        gui_update_data = {};
     
-    HandlePauseCondition;
+        params = trial_params(current_trial, :);
+        gui_update_data.trial_number = current_trial;
+        gui_update_data.current_position = params.position_um;
+        gui_update_data.current_power = params.power;
+        gui_update_data.current_ITI = params.ITI;
     
-    if BpodSystem.Status.BeingUsed == 0
-        break
+    
+        next_trial = current_trial + 1;
+        if next_trial > TOTAL_NUM_TRIALS
+            gui_update_data.next_position = 'Done';
+            gui_update_data.next_power = 'Done';
+            gui_update_data.next_ITI = 'Done';
+        else
+            next_params = trial_params(next_trial, :);
+            gui_update_data.next_position =  next_params.position_um;
+            gui_update_data.next_power = next_params.power;
+            gui_update_data.next_ITI = next_params.ITI;
+        end
+    
+        gui.update_trial_info(gui_update_data);
+    
+        trial_position_um = params.position_um;
+        trial_position_index = params.position_index;
+        trial_power = params.power;
+        trial_ITI = params.ITI;
+        disp("Trial: " + num2str(current_trial))
+        disp(params)
+        % Move Galvostation
+        move_time = PRE_STIM_TIME_S + STIMULATION_TIME_S + POST_STIMULATION_TIME_S;
+        % galvostation.configure_trial_move(trial_position_um, move_time);
+    
+        % Set Laser Power
+        % galvostation.laser_1.configure_trial_stimulation(trial_position_index, trial_power, STIMULATION_TIME_S);
+        % Assemble State Machine
+        state_machine = gen_state_machine(PRE_STIM_TIME_S, STIMULATION_TIME_S, POST_STIMULATION_TIME_S, trial_ITI);
+        % Send state machine
+        SendStateMachine(state_machine);
+        % Wait for data to come back
+        raw_events = RunStateMachine();
+        % Save data
+        if ~isempty(fieldnames(raw_events))
+            BpodSystem.Data = AddTrialEvents(BpodSystem.Data, raw_events);
+            BpodSystem.Data.TrialSettings(current_trial, :) = params;
+            SaveBpodSessionData();
+        end
+        
+        HandlePauseCondition;
+        
+        if BpodSystem.Status.BeingUsed == 0
+            break;
+        end
     end
 end
 
+stop_timer_and_delete(gui.figure);
 % close_galvo_gui(galvo_gui);
 % galvostation = [];
 % EndPulsePal;
@@ -302,20 +313,33 @@ function timer_callback(timer, gui)
     gui.update_timer(new_time);
 end
 
-function start_button_callback()
+function start_button_callback(app)
     global BpodSystem;
     disp("Start Clicked!");
     start(BpodSystem.Timers.experiment_timer);
+    app.start = true;
 end
 
 function stop_button_callback()
     global BpodSystem;
-    disp("Stop Clicked!");
-    stop(BpodSystem.Timers.experiment_timer);
-    delete(BpodSystem.Timers.experiment_timer);
+    disp("Stop Triggered!");
     BpodSystem.Status.BeingUsed = 0;
 end
 
 function pause_button_callback()
     disp("Pause Clicked!");
+end
+
+function close_gui_callback(src, ~)
+% src is the GUI figure
+    disp("Close Triggered")
+    src.Visible = false;
+    stop_button_callback();
+end
+
+function stop_timers(gui)
+    global BpodSystem;
+    stop(BpodSystem.Timers.experiment_timer);
+    delete(BpodSystem.Timers.experiment_timer);
+    delete(gui);
 end
