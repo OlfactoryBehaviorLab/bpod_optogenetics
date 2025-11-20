@@ -224,11 +224,12 @@ end
 cleanup(gui);
 close_galvo_gui(galvo_gui);
 galvostation = [];
-EndPulsePal;
-EndBpod;
+% EndPulsePal;
+% EndBpod;
 
 beep();
 msgbox("Experiment Finished!", "Finished");
+figure(gui.figure);
 
 end
 
@@ -322,20 +323,22 @@ end
 function close_gui_callback(gui)
 % src is the GUI figure
     global BpodSystem;
-    %disp("Close Triggered")
-    if BpodSystem.Status.BeingUsed
-        % If still running, lets make them manually stop the experiment
-        msgbox("End current session before closing the GUI!")
-    else
-        if gui.can_close
-            % Only let the figure close if 
-            disp("Closing Figure!")
-            delete(gui.figure)
-        elseif ~gui.start
-            gui.early_close = true;
+    if isfield(BpodSystem, 'Status')
+        % Enter here if Bpod still exists
+        if BpodSystem.Status.BeingUsed
+            % If still running, lets make them manually stop the experiment
+            msgbox("End current session before closing the GUI!")
+        else
+            % We're closing early, trigger system shutdown
+            if ~gui.start
+                gui.early_close = true;
+            end
         end
+    else
+        % If Bpod is gone we can definitely close
+        disp("Closing Freely Moving GUI!");
+        delete(gui.figure);
     end
-    % stop_button_callback();
 end
 
 function cleanup(gui)
