@@ -175,9 +175,9 @@ trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Gen
     
         next_trial = current_trial + 1;
         if next_trial > TOTAL_NUM_TRIALS
-            gui_update_data.next_position = 'Done';
-            gui_update_data.next_power = 'Done';
-            gui_update_data.next_ITI = 'Done';
+            gui_update_data.next_position = 999;
+            gui_update_data.next_power = 999;
+            gui_update_data.next_ITI = 999;
         else
             next_params = trial_params(next_trial, :);
             gui_update_data.next_position =  next_params.position_um;
@@ -195,10 +195,10 @@ trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Gen
         disp(params)
         % Move Galvostation
         move_time = PRE_STIM_TIME_S + STIMULATION_TIME_S + POST_STIMULATION_TIME_S;
-        % galvostation.configure_trial_move(trial_position_um, move_time);
+        galvostation.configure_trial_move(trial_position_um, move_time);
     
         % Set Laser Power
-        % galvostation.laser_1.configure_trial_stimulation(trial_position_index, trial_power, STIMULATION_TIME_S);
+        galvostation.laser_1.configure_trial_stimulation(trial_position_index, trial_power, STIMULATION_TIME_S);
         % Assemble State Machine
         state_machine = gen_state_machine(PRE_STIM_TIME_S, STIMULATION_TIME_S, POST_STIMULATION_TIME_S, trial_ITI);
         % Send state machine
@@ -221,13 +221,13 @@ trial_params.ITI = randi([MIN_ITI_S MAX_ITI_S], size(trial_params, 1), 1); % Gen
 end
 
 cleanup(gui);
-% close_galvo_gui(galvo_gui);
-% galvostation = [];
-% EndPulsePal;
-%EndBpod;
+close_galvo_gui(galvo_gui);
+galvostation = [];
+EndPulsePal;
+EndBpod;
 
-%beep();
-%uiwait(msgbox("Experiment Finished!", "Finished"));
+beep();
+msgbox("Experiment Finished!", "Finished");
 
 end
 
@@ -246,28 +246,10 @@ function wait_dialog = create_wait_dialog(BpodSystem, galvo_gui)
     uicontrol('Parent', wait_dialog, 'Position', [dialog_size_x/2 - 35, dialog_size_y/2 - 25, 70, 25], 'String', 'Start!', 'Callback', @(obj, ~)start_dialog_callback(obj, BpodSystem, galvo_gui))
 end
 
-function start_dialog_callback(obj, BpodSystem, galvo_gui)
-    if BpodSystem.Status.BeingUsed == 0
-        close_galvo_gui(galvo_gui);
-    end
-    delete(obj.Parent);
-end
-
 function close_galvo_gui(galvo_gui)
     if isprop(galvo_gui, 'GalvostationManualControlUIFigure')
         close(galvo_gui.GalvostationManualControlUIFigure);
     end
-end
-
-function GUI_struct = unpack_params(params)
-
-    fields = fieldnames(params);
-
-    for i=1:length(fields)
-        field = fields{i};
-        GUI_struct.GUI.(field) = params.(field);
-    end
-
 end
 
 function state_machine = gen_state_machine(pre_stim_time_s, stim_time_s, post_stim_time_s, ITI_s)
