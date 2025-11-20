@@ -17,11 +17,11 @@ DEFAULTS.STIMULATION_POSITIONS = [250, 750, 1250]; % Center(s) in um of stimulat
 
 DEFAULTS.NUM_TRIALS_PER_POSITION = 20;
 
-DEFAULTS.DESIRED_POWERS_MW = [0.5]; % Stimulation power(s) in mW
+DEFAULTS.DESIRED_POWERS_MW = [0.5, 1, 2, 3, 4]; % Stimulation power(s) in mW
 DEFAULTS.PULSE_DURATIONS_S = [-1]; % Pulse durations for duty-cycle; -1 indicates constant power
 DEFAULTS.INTER_PULSE_INTERVALS_S = [0]; % Inter-pulse-intervals for duty-cycle in seconds; 0 indicates constant power
 
-DEFAULTS.PRE_STIM_TIME_S = 4; % Pre stimulation time in seconds
+DEFAULTS.PRE_STIMULATION_TIME_S = 4; % Pre stimulation time in seconds
 DEFAULTS.STIMULATION_TIME_S = 2; % Stimulation time in seconds
 DEFAULTS.POST_STIMULATION_TIME_S = 4; % Post stimulation time in seconds
 
@@ -64,17 +64,18 @@ galvo_gui = bpod_galvostation.gui.main_gui(galvostation);
 galvostation.laser_1.calibration_values = LASER_CALIBRATIONS;
 
 %% CHECK INPUTS
-% if (length(DESIRED_POWERS_MW) ~= length(PULSE_DURATIONS_S)) && (length(PULSE_DUREATIONS_S) ~= length(INTER_PULSE_INTERVALS_S))
+% if (length(DEFAULTS.DESIRED_POWERS_MW) ~= length(DEFAULTS.PULSE_DURATIONS_S)) && (length(DEFAULTS.PULSE_DUREATIONS_S) ~= length(DEFAULTS.INTER_PULSE_INTERVALS_S))
 %     error("The length of DESIRED_POWERS_MW, PULSE_DURATIONS_S, and INTER_PULSE_INTERVALS_S must be the same! There must be one duty cycle per power level!");
 % end
-% 
-% if GALVOSTATION_CAL_CONSTANT == 0 | GALVOSTATION_CAL_CONSTANT == 0
-%     error("Please provide calibration values for the Galvostation!");
-% end
-% 
-% if size(LASER_CALIBRATIONS, 1) ~= length(STIMULATION_POSITIONS)
-%     error("Please provide a laser calibration for each stimulation position!");
-% end
+% Pulsed stimulation not implemented yet! -ACP 11-20-25
+
+if GALVOSTATION_CAL_CONSTANT == 0 | GALVOSTATION_CAL_CONSTANT == 0
+    error("Please provide calibration values for the Galvostation!");
+end
+
+if size(LASER_CALIBRATIONS, 1) ~= length(DEFAULTS.STIMULATION_POSITIONS)
+    error("Please provide a laser calibration for each stimulation position!");
+end
 
 % Experiment GUI
 if isempty(BpodSystem.Path.CurrentDataFile)
@@ -87,7 +88,7 @@ end
 % Extra subdirectory will throw it off for now
 
 gui_setup_struct = {};
-gui_setup_struct.defaults = DEFAULTS; % Not used currently
+gui_setup_struct.defaults = DEFAULTS;
 gui_setup_struct.bpod = BpodSystem; % Not used currently
 gui_setup_struct.mouse = path_components.mouse;
 gui_setup_struct.experiment = path_components.experiment;
